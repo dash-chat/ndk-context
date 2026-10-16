@@ -114,19 +114,14 @@ pub fn try_android_context() -> Option<AndroidContext> {
 ///
 /// # Safety
 ///
-/// The pointers must be valid and this function must be called exactly once before `main` is
-/// called.
+/// The pointers must be valid and this function must be called before `main` is called.
 ///
-/// # Panics
-///
-/// Panics if the context is already initialized.
+/// A second call keeps the context already set. Several crates install the context
+/// independently (an app's `JNI_OnLoad`, tao, android-activity), and a process can be started
+/// without an activity and get one later, so no single caller can guarantee it goes first.
 pub unsafe fn initialize_android_context(java_vm: *mut c_void, context_jobject: *mut c_void) {
     // SAFETY: the caller upholds the same contract.
-    let initialized = try_initialize_android_context(java_vm, context_jobject);
-    assert!(
-        initialized.is_ok(),
-        "android context was already initialized"
-    );
+    let _ = try_initialize_android_context(java_vm, context_jobject);
 }
 
 /// Initializes the [`AndroidContext`], or returns the one already set.

@@ -21,11 +21,8 @@ fn panicking_functions_keep_the_first_context() {
 
     // SAFETY: nothing in this test dereferences the dangling pointers.
     unsafe { ndk_context::initialize_android_context(first_vm, first_context) };
-    let second = panic::catch_unwind(|| unsafe {
-        ndk_context::initialize_android_context(second_vm, second_context)
-    })
-    .unwrap_err();
-    assert_eq!(message(second), "android context was already initialized");
+    // SAFETY: as above.
+    unsafe { ndk_context::initialize_android_context(second_vm, second_context) };
     let kept = ndk_context::android_context();
     assert_eq!((kept.vm(), kept.context()), (first_vm, first_context));
 
